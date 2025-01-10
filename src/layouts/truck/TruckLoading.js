@@ -449,7 +449,7 @@ function TruckLoading() {
                             fontSize: "14px",
                             cursor: "pointer",
                           }}
-                          onClick={toggleSort} // Click to toggle sorting
+                          // onClick={toggleSort} 
                         >
                           Route Name {sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}
                         </th>

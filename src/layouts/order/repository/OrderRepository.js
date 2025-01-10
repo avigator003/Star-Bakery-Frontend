@@ -46,7 +46,7 @@ export default class OrderRepository {
   }
   static async create(order,userId) {
     return api
-      .post("/order/create", {products:order,userId:localStorage.getItem('user'),orderCreatedUserId:userId})
+      .post("/order/create", {products:order,userId,orderCreatedUserId:userId})
       .then((response) => {
         return response.data;
       })
