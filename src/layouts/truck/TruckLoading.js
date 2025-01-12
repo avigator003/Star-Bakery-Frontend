@@ -30,10 +30,7 @@ function TruckLoading() {
   const [, setAlertMessage] = useState("Fetched Successfully");
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [orders, setOrders] = useState();
-  const [sortConfig, setSortConfig] = useState({
-    direction: 'asc', // Default is ascending
-  });
-  const [sortedColumns, setSortedColumns] = useState([]);
+
   const getUsers = () => {
     return UserRepository.getAll().then((result) => {
       const userNames = result.users?.map((user) => user.route_name);
@@ -56,6 +53,11 @@ function TruckLoading() {
 
   const getCategories = () => {
     return CategoryRepository.getAll().then((result) => {
+      const category = result.data[0];
+      setSelectedCategory({
+        value: category._id,
+        label: category.category_name,
+      });
       return result;
     });
   };
@@ -131,8 +133,9 @@ function TruckLoading() {
         const year = parsedDate.getFullYear();
 
         // Create the formatted date string
-        const formattedDate = `${day < 10 ? "0" : ""}${day}-${month < 10 ? "0" : ""
-          }${month}-${year}`;
+        const formattedDate = `${day < 10 ? "0" : ""}${day}-${
+          month < 10 ? "0" : ""
+        }${month}-${year}`;
 
         const categoryDateRow = [
           "Category:",
@@ -203,7 +206,7 @@ function TruckLoading() {
     "products",
     () => getProducts(),
     {
-      onSuccess: () => { },
+      onSuccess: () => {},
       onError: () => {
         setOpenAlert(true);
         setAlertMessage("Products Fetch Unsuccessful");
@@ -221,18 +224,11 @@ function TruckLoading() {
     );
   };
 
-  const toggleSort = () => {
-    const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
-    setSortConfig({
-      direction: newDirection,
-    });
-  };
-
   const { refetch: orderRefetch } = useQuery(
     "orders",
     () => getOrders(),
     {
-      onSuccess: (response) => { },
+      onSuccess: (response) => {},
       onError: (err) => {
         setOpenAlert(true);
         setAlertMessage("Products Fetch Unsuccessful");
@@ -249,13 +245,10 @@ function TruckLoading() {
     orderRefetch();
   }, [orderDate, orderRefetch]);
 
-  const options = [
-    { value: "", label: "Choose the category" }, // Default option
-    ...(categoryData?.data?.map((item) => ({
-      value: item._id,
-      label: item.category_name,
-    })) || []),
-  ];
+  const options = categoryData?.data?.map((item) => ({
+    value: item._id,
+    label: item.category_name,
+  }));
 
   const getTotalForProduct = (product) => {
     // Initialize a variable to store the total value
@@ -277,19 +270,6 @@ function TruckLoading() {
   const handleChange = (selectedOption) => {
     setSelectedCategory(selectedOption);
   };
-
-  useEffect(() => {
-    const columns = [...productsByCategory].sort((a, b) => {
-      if (sortConfig.direction === "asc") {
-        return a.localeCompare(b);
-      } else {
-        return b.localeCompare(a);
-      }
-    });
-    setSortedColumns(columns);
-  }, [productsByCategory, sortConfig]);
-
-  
 
   return (
     <DashboardLayout>
@@ -425,7 +405,7 @@ function TruckLoading() {
                           borderRight: "0.5px solid black",
                         }}
                       />
-                      {sortedColumns.map((product, index) => (
+                      {productsByCategory?.map((product, index) => (
                         <col
                           key={index}
                           style={{
@@ -447,15 +427,13 @@ function TruckLoading() {
                             padding: "5px",
                             textAlign: "center",
                             fontSize: "14px",
-                            cursor: "pointer",
                           }}
-                          // onClick={toggleSort} 
                         >
-                          Route Name {sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}
+                          Route Name
                         </th>
-                        {sortedColumns.map((product, index) => (
+                        {productsByCategory?.map((product) => (
                           <th
-                            key={index}
+                            key={product}
                             style={{
                               padding: "3px",
                               background: "lightgray",
@@ -474,7 +452,7 @@ function TruckLoading() {
                     <tbody>
                       {users.map((user, rowIndex) => {
                         // Check if any cell in this row has a non-zero value
-                        const hasNonZeroValue = sortedColumns.some(
+                        const hasNonZeroValue = productsByCategory.some(
                           (product) => getCellData(user, product) !== 0
                         );
 
@@ -500,7 +478,7 @@ function TruckLoading() {
                             >
                               {user}
                             </td>
-                            {sortedColumns.map((product, colIndex) => (
+                            {productsByCategory?.map((product, colIndex) => (
                               <td
                                 key={colIndex}
                                 style={{
@@ -533,7 +511,7 @@ function TruckLoading() {
                         >
                           Total
                         </td>
-                        {sortedColumns.map((product, colIndex) => (
+                        {productsByCategory?.map((product, colIndex) => (
                           <td
                             key={colIndex}
                             style={{
